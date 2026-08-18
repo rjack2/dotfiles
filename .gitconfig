@@ -1,27 +1,29 @@
 [user]
-	name = Alfredo Deza
-	email = <alfredo@deza.pe>
+	name = Robert Jackson
+	email = <rjack2@gmail.com>
 [color]
-	ui = true
-[branch]
-	autosetuprebase = always
-[push]
-	default = tracking
-[format]
-    #pretty=format:%C(yellow)%h%Creset -%C(red)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset
+    ui = auto
+
 [init]
-	templatedir = ~/.git_template
-[alias]
-	ctags = !.git/hooks/ctags
-	workprofile = config user.email \"adeza@redhat.com\"
-    welp = reset --soft HEAD~1
-    pu = !"git fetch origin -v; git fetch upstream -v; git merge --ff upstream/master"
+    defaultBranch = main
+
+[core]
+    editor = vim
+
+[pull]
+    rebase = false
+
+[push]
+    autoSetupRemote = true
+
 [merge]
-	tool = vimdiff
-	conflictstyle = diff3
-    renamelimit = 2424
-[mergetool]
-	keepBackup = false
-[diff]
-    tool = vimdiff
-	conflictstyle = diff3
+    conflictStyle = zdiff3
+
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+    lg = log --oneline --graph --decorate --all
+    last = log -1 HEAD
+    undo = reset --soft HEAD~1

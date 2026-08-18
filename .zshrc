@@ -1,462 +1,50 @@
-# Before anything, we call compinit so completion works
-autoload -Uz compinit; compinit
+# ~/.zshrc
+#
+# GitHub Codespaces configuration
 
-virtual_envs=($HOME/code $HOME/.virtualenvs)
-virtualenvshome="$HOME/.virtualenvs"
+# History
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=100000
+SAVEHIST=100000
 
-zle_highlight=(region:standout special:standout suffix:bold isearch:underline)
-fpath=(~/.zsh $fpath)
-
-export PIP_DOWNLOAD_CACHE=$HOME/.pip_cache
-
-# at some point I should make something out of this
-#plugins=(git django med pytest python)
-# FIXME
-# XXX Seriously now. I will not add another thing
-# here until I fix this shit
-if [[ -e $HOME/.zsh ]]; then
-    source $HOME/.zsh/python/python.plugin.zsh
-    source $HOME/.zsh/pytest/pytest.plugin.zsh
-    source $HOME/.zsh/python/python.completion.zsh
-    source $HOME/.zsh/vi/zle_vi_visual.zsh
-fi
-
-if [[ -e $HOME/.secrets ]]; then
-    for secret_file in `/usr/bin/ls $HOME/.secrets/*.sh`; do
-        source $secret_file
-    done
-fi
-
-# Cache time for uber fast completion
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path $HOME/.zsh/cache
-
-# Get homebrew's path first and then other custom bits
-#export PATH=/opt/homebrew/bin:$PATH:/usr/local/sbin:/usr/local/mysql/bin:$HOME/bin:$HOME/bin/google_appengine:/usr/texbin:/usr/local/go/bin
-export PATH=/home/alfredo/.local/bin:/home/alfredo/.local/share/mise/installs/node/25.1.0/bin:/home/alfredo/.local/share/omarchy/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/alfredo/.cargo/bin
-export GOROOT=/usr/local/go
-export GOPATH=$HOME/go
-export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-
-# By default, zsh delays 'Esc' to get into normal mode by half
-# a second. Reduce this to 0.1s
-export KEYTIMEOUT=1
-
-# source IP's and private shortcuts
-if [[ -e $HOME/.zshrc-private ]]; then
-    source $HOME/.zshrc-private
-fi
-
-HISTFILE=$HOME/.zsh_history
-HISTSIZE=10000000
-SAVEHIST=10000000
-setopt SHARE_HISTORY
 setopt APPEND_HISTORY
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
 
-# Remember previous directories
-DIRSTACKSIZE=10
-DIRSTACKFILE=$HOME/.zdirs
-if [[ -f $DIRSTACKFILE ]] && [[ $#dirstack -eq 0 ]]; then
-  dirstack=( ${(f)"$(< $DIRSTACKFILE)"} )
-  [[ -d $dirstack[1] ]] && cd $dirstack[1]
-fi
-chpwd() {
-  print -l $PWD ${(u)dirstack} >$DIRSTACKFILE
-}
+# Completion
+autoload -Uz compinit
+compinit
 
+# Navigation
+setopt AUTO_CD
+setopt AUTO_PUSHD
+setopt PUSHD_IGNORE_DUPS
 
-setopt autopushd pushdsilent pushdtohome
+# Editor
+export EDITOR=vim
+export VISUAL=vim
 
-## Remove duplicate entries
-setopt pushdignoredups
+# Go
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$HOME/.local/bin:$PATH"
 
-## This reverts the +/- operators.
-setopt pushdminus
-
-# I hate autocorrect
-unsetopt correctall
-
-# load me some colors please so I can use them later
-autoload -U colors && colors
-
-setopt auto_menu         # show completion menu on succesive tab press
-setopt complete_in_word
-setopt always_to_end
-setopt  globcomplete
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-zstyle ':completion:*' list-colors ''
-zstyle ':completion:*:*:*:*:*' menu select
-zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'
-zstyle ':completion:*:*:*:*:processes' command "ps -u `whoami` -o pid,user,comm -w -w"
-
-# disable named-directories autocompletion
-zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
-
-zstyle ':completion:*' completer _complete _match _approximate
-zstyle ':completion:*:functions' ignored-patterns '_*'
-zstyle ':completion:*:match:*' original only
-zstyle ':completion:*:approximate:*' max-errors 2 numeric
-zstyle -e ':completion:*:approximate:*'  max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3))numeric)'
-
-# Partial color matching on TAB
-highlights='${PREFIX:+=(#bi)($PREFIX:t)(?)*==$color[blue]=00}':${(s.:.)LS_COLORS}}
-zstyle -e ':completion:*' list-colors 'reply=( "'$highlights'" )'
-zstyle -e ':completion:*:-command-:*:commands' list-colors 'reply=( "'$highlights'" )'
-unset highlights
-
-# fix weird matching
-setopt nonomatch
-
-# cd aliases
-alias ..="cd .."
-alias ...="cd ../.."
-alias ....="cd ../../.."
-alias .....="cd ../../../.."
-alias ......="cd ../../../../.."
-
-# make ls colors! regardless of the OS! fantastic!
-ls --color -d . &>/dev/null 2>&1 && alias ls='ls --color=if-tty' || alias ls='ls -G'
-
-alias pg='ps aux | grep -v grep | grep $1'
-alias pgi='ps aux | grep -v grep | grep -i $1'
-alias \:q='exit'
-alias \:Q='exit'
-alias cls='clear; ls'
-alias Vimrc='mvim ~/.vimrc'
-alias vimrc='vim ~/.vimrc'
-alias gst='git status'
-alias timestamp='date -j -f "%a %b %d %T %Z %Y" "`date`" "+%s"'
-alias lower='tr "[:upper:]" "[:lower:]"'
-alias upper='tr "[:lower:]" "[:upper:]"'
-alias pbcopy='xclip -selection clipboard'
-
-
-# Try to load Omarchy aliases which are useful
-if [[ -e $HOME/.local/share/omarchy/default/bash/aliases ]]; then
-    source $HOME/.local/share/omarchy/default/bash/aliases
+# mise, when installed
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate zsh)"
 fi
 
-#
-# Function Time!
-#
+# Useful aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
 
-catn() {
-    # Accept optional glob pattern, default to all files recursively
-    # Skips directories that ag (silversearcher) would ignore
-    local pattern="${1:-**/*}"
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git log --oneline --decorate --graph'
 
-    # Enable extended globbing
-    setopt local_options extended_glob null_glob
-
-    # Build exclusion pattern for ag-ignored directories
-    # Uses zsh's ^ negation operator
-    local excluded="^(*/|)(.git|.svn|.hg|.bzr|node_modules|.npm|.yarn|.pnpm|.cache|.bundle|vendor|build|dist|target|.sass-cache|.tox|.pytest_cache|__pycache__|.mypy_cache|.venv|venv|.virtualenv)/*"
-
-    # Collect matching files, applying exclusions
-    local files=()
-    for file in ${~pattern}(N.); do
-        # Skip if file is in an ignored directory
-        if [[ ! "$file" =~ "(^|/)(.git|.svn|.hg|.bzr|node_modules|.npm|.yarn|.pnpm|.cache|.bundle|vendor|build|dist|target|.sass-cache|.tox|.pytest_cache|__pycache__|.mypy_cache|.venv|venv|.virtualenv)($|/)" ]]; then
-            files+=("$file")
-        fi
-    done
-
-    # Concatenate files, show on terminal AND copy to clipboard
-    (for file in "${files[@]}"; do
-        echo "=== $file ==="
-        cat "$file"
-        echo
-    done) | tee >(xclip -selection clipboard)
-}
-
-
-transc-srt() {
-    file=$1
-    filepath=$(dirname `realpath $file`)
-    output="$filepath/transcripts"
-    echo $output
-    mkdir -p "$output"
-    filename=$(basename "$file")
-    name="${filename%.*}"
-
-    ffmpeg -loglevel error -i "$file" -f wav -ac 1 -acodec pcm_s16le -ar 16000 - |
-      whisper --model /home/alfredo/code/whisper.cpp/models/ggml-base.en.bin  --threads 8 --processors 2 --output-srt --output-file "$output/$name" -f -
-}
-
-transcf() {
-    file=$1
-    filepath=$(dirname `realpath $file`)
-    output="$filepath/transcripts"
-    echo $output
-    mkdir -p "$output"
-    filename=$(basename "$file")
-    name="${filename%.*}"
-
-    ffmpeg -loglevel error -i "$file" -f wav -ac 1 -acodec pcm_s16le -ar 16000 - |
-      whisper --model /home/alfredo/code/whisper.cpp/models/ggml-base.en.bin  --threads 8 --processors 2 --output-txt --output-file "$output/$name" -f -
-}
-
-
-transc() {
-    output="${1%/}/transcripts"
-    mkdir -p "$output"
-    for file in $(find "$1" -name '*.mp4' -print0); do
-
-      filename=$(basename "$file")
-      name="${filename%.*}"
-
-      ffmpeg -loglevel error -i "$file" -f wav -ac 1 -acodec pcm_s16le -ar 16000 - |
-        whisper --model /home/alfredo/code/whisper.cpp/models/ggml-base.en.bin  --threads 2 --processors 24 --output-txt --output-file "$output/$name" -f -
-
-    done
-}
-#
-
-# Create an HTML file from a template
-function slidegen() {
-  data_path=$1
-  template_path="/home/alfredo/tmp/slides.j2"
-  # Extract directory and filename from data_path
-  dir_path=$(dirname "$data_path")
-  base_name=$(basename "$data_path" .yml)
-
-  # Create output path with .html extension
-  output_path="${dir_path}/${base_name}.html"
-  minijinja-cli $template_path $data_path -o $output_path
-}
-
-# Create a directory and then cd into it
-function take() {
-  mkdir -p $@ && cd ${@:$#}
-}
-
-
-ssh-copy-key() {
-    if [ $2 ]; then
-        key=$2
-    else
-        key="$HOME/.ssh/id_rsa.pub"
-    fi
-    cat "$key" | ssh ${1} 'umask 0077; mkdir -p .ssh; cat >> .ssh/authorized_keys'
-}
-
-
-# make ls colors! regardless of the OS! fantastic!
-ls --color -d . &>/dev/null 2>&1 && alias ls='ls --color=if-tty' || alias ls='ls -G'
-
-alias pg='ps aux | grep -v grep | grep $1'
-alias pgi='ps aux | grep -v grep | grep -i $1'
-alias \:q='exit'
-alias \:Q='exit'
-alias cls='clear; ls'
-alias Vimrc='mvim ~/.vimrc'
-alias vimrc='vim ~/.vimrc'
-alias gst='git status'
-alias timestamp='date -j -f "%a %b %d %T %Z %Y" "`date`" "+%s"'
-alias lower='tr "[:upper:]" "[:lower:]"'
-alias upper='tr "[:lower:]" "[:upper:]"'
-alias pbcopy='xclip -selection clipboard'
-
-vsed() {
-  # call vim on a file (or glob) to perform a search and replace operation
-  # with confirmation. Does not save automagically. Example usage:
-  #     vsed foo bar *.py
-  # Will search for 'foo' and replace it with 'bar' in all matching *.py files.
-  # It also supports globbing for recursive files:
-  #     vsed foo bar **/*.py
-  search=$1
-  replace=$2
-  shift
-  shift
-  vim -c "bufdo! set eventignore-=Syntax| %s/$search/$replace/gce" $*
-
-}
-
-ptj() {
-  # A small utility to wrap `sips` (the scriptable image processing system)
-  # included in OSX, so that converting a PDF to JPEG is as easy as just
-  # providing the path to the PDF.
-
-  filename=$1
-  trimmed_filename="${filename%%.*}"
-  command="sips -s format jpeg $filename --out $trimmed_filename.jpg"
-  echo $command
-  $command
-}
-
-
-# Azure functions
-# Consider a plugin for these
-azure-sp() {
-  # Load an Azure Service Principal JSON file as environment variables
-  # prefixed with AZURE_SERVICE_PRINCIPAL_ so that they can be referenced in
-  # other scripts when needed
-  if [[ -e $HOME/.secrets/api-service-principal.json ]]; then
-      cat $HOME/.secrets/api-service-principal.json | j2env AZURE_SERVICE_PRINCIPAL_
-  fi
-}
-
-
-azure-token() {
-  # Create an Azure token - requires a Service Principal with secrets loaded
-  # as environment variables.
-  # WARNING: it produces stdout output with the token
-  URL="https://login.microsoftonline.com/$AZURE_SERVICE_PRINCIPAL_TENANT/oauth2/token"
-
-  ## Params
-  tenantId="tenantId=$AZURE_SERVICE_PRINCIPAL_TENANT"
-  client_id="client_id=$AZURE_SERVICE_PRINCIPAL_APPID"
-  client_secret="client_secret=$AZURE_SERVICE_PRINCIPAL_PASSWORD"
-  resource="resource=https://management.azure.com"
-  grant_type="grant_type=client_credentials"
-
-  ## Send the request
-  curl -s -X POST $URL \
-     -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "$tenandId&$client_id&$client_secret&$resource&$grant_type"
-
-  echo $result
-
-}
-
-# Function to get suggestions and show in fzf
-# aprender-shell outputs: suggestion\tscore
-# suggestion may contain ASCII 31 (\x1F) separator between command and description
-_aprender_fzf_complete() {
-    # Skip if disabled
-    [[ "${APRENDER_DISABLED:-0}" == "1" ]] && return
-
-    # Get current command line
-    local current_line="$BUFFER"
-
-    # Skip if line too short
-    [[ "${#current_line}" -lt 2 ]] && return
-
-    # Get all suggestions from aprender-shell (up to 50)
-    # Format: suggestion\tscore where suggestion = "command\x1Fdescription" or just "command"
-    local suggestions
-    suggestions=$(aprender-shell suggest "$current_line" -c 50 2>/dev/null)
-
-    # Check if we got any suggestions
-    [[ -z "$suggestions" ]] && return
-
-    # Extract just the suggestions (field 1), discard scores (field 2)
-    local suggestions_only
-    suggestions_only=$(echo "$suggestions" | cut -f1)
-
-    # Use fzf with ASCII 31 (\x1F) as delimiter
-    # This splits "command\x1Fdescription" into two fields:
-    #   Field 1: command
-    #   Field 2: description
-    # --delimiter=$'\x1F'  Split on ASCII 31 (unit separator)
-    # --nth=1,2            Search in both command and description
-    # --with-nth=1,2       Display both command and description
-    # cut -d$'\x1F' -f1    Extract only the command (field 1)
-    local selected
-    selected=$(echo "$suggestions_only" | \
-        fzf --height=40% \
-            --reverse \
-            --border \
-            --prompt="❯ " \
-            --delimiter=$'\x1F' \
-            --nth=1,2 \
-            --with-nth=1,2 \
-            --bind 'ctrl-/:toggle-preview' \
-            --header='Type to filter on command or description • Enter accept • Esc cancel' \
-            --color='prompt:#7aa2f7,pointer:#bb9af7,marker:#9ece6a,header:#565f89' \
-            --preview='echo {1}' \
-            --preview-window=up:1:border-none \
-            --info=inline \
-            | cut -d$'\x1F' -f1)
-
-    # If user selected something, replace the buffer with ONLY the command
-    if [[ -n "$selected" ]]; then
-        BUFFER="$selected"
-        CURSOR=${#BUFFER}
-    fi
-
-    zle reset-prompt
-}
-
-# Bind to Ctrl+Space for fzf completion
-zle -N _aprender_fzf_complete
-bindkey '^@' _aprender_fzf_complete
-
-
-# Disable LDAP completion of usernames
-zstyle ':completion:*' users {adeza,root,cmg}
-
-# Build/Compile Correctly and faster. Need to revise compatible options
-#
-export REVEALJS_PATH="/home/alfredo/code/reveal.js"
-export LESS=FRSXQ
-
-# Load PythonStartup File
-export PYTHONSTARTUP=$HOME/dotfiles/pythonstartup.py
-
-export EDITOR=`which vim`
-
-# if mode indicator wasn't setup by theme, define default
-if [[ "$MODE_INDICATOR" == "" ]]; then
-  NORMAL_MODE="%{$fg[red]%}ᓆ%{$reset_color%}"
-  INSERT_MODE="ᓆ"
+# Private configuration, if one is manually provided
+if [[ -f "$HOME/.zshrc-private" ]]; then
+    source "$HOME/.zshrc-private"
 fi
-
-function zle-line-init zle-keymap-select {
- VIMODE="${${KEYMAP/vicmd/$NORMAL_MODE}/(main|viins)/$INSERT_MODE}"
- zle reset-prompt
-}
-
-zle -N zle-line-init
-zle -N zle-keymap-select
-
-# If I am in a sub-shell from Vim, let me know
-# otherwise I keep forgetting
-if [ "$(env | grep VIM)" ]; then
-    FROM_VIM="%{$fg[red]%}[vim]%{$reset_color%}"
-    PS1="$PS1{$FROM_VIM}"
-fi
-
-bindkey -v
-
-  # fzf integration
-  if command -v fzf &> /dev/null; then
-    if [[ -f /usr/share/fzf/completion.zsh ]]; then
-      source /usr/share/fzf/completion.zsh
-    fi
-    if [[ -f /usr/share/fzf/key-bindings.zsh ]]; then
-      source /usr/share/fzf/key-bindings.zsh
-    fi
-  else
-    # Make sure Ctrl-R works
-    bindkey '^R' history-incremental-search-backward
-  fi
-
-# Make backspace work like vim
-bindkey '^?' backward-delete-char
-
-# When using arrows, match what I have already typed
-# for history search
-bindkey -M viins "\e[A" history-beginning-search-backward # Up arrow
-bindkey -M viins "\e[B" history-beginning-search-forward  # Down arrow
-bindkey -M vicmd "k"    up-line-or-search
-bindkey -M vicmd "j"    up-line-or-search
-bindkey -M viins "\e[Z" reverse-menu-complete
-
-ZSH_THEME_GIT_PROMPT_PREFIX="("
-ZSH_THEME_GIT_PROMPT_SUFFIX=")"
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg_bold[yellow]%}"
-ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg[green]%}"
-
-# Load vcs_info
-autoload -Uz vcs_info
-setopt prompt_subst
-
-zstyle ':vcs_info:*' stagedstr '*'
-zstyle ':vcs_info:*' unstagedstr '*'
-zstyle ':vcs_info:*' formats '[%F{yellow}%b%c%u%F{reset}]'
-zstyle ':vcs_info:*' check-for-changes true
-zstyle ':vcs_info:*' enable git svn hg
-precmd () { vcs_info }
-
-PROMPT='${FROM_VIM}$(hostname -s)${vcs_info_msg_0_}%{$fg[green]%} %30<..<${PWD/#$HOME/~}%<< %{$reset_color%}${VIMODE} '
