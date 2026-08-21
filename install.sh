@@ -29,6 +29,32 @@ link .inputrc
 git config --global include.path "$DOTFILES/.gitconfig"
 
 #
+# Install personal VS Code extensions.
+#
+install_vscode_extensions() {
+    if ! command -v code >/dev/null 2>&1; then
+        echo "VS Code CLI not available; skipping extension installation."
+        return
+    fi
+
+    local extensions=(
+        "vscodevim.vim"
+        "haapanen.vs-code-paragraph-hard-wrapper"
+        "konstantin.wrapselection"
+        "stkb.rewrap"
+        "tuxtina.json2yaml"
+    )
+
+    for extension in "${extensions[@]}"; do
+        echo "Installing VS Code extension: $extension"
+        code --install-extension "$extension" --force || \
+            echo "Warning: could not install $extension"
+    done
+}
+
+install_vscode_extensions
+
+#
 # Make Zsh the login shell.
 #
 if command -v zsh >/dev/null 2>&1; then
