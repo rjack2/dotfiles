@@ -3,7 +3,6 @@
 set -e
 
 extensions=(
-    "vscodevim.vim"
     "haapanen.vs-code-paragraph-hard-wrapper"
     "konstantin.wrapselection"
     "stkb.rewrap"
