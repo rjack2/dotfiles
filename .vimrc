@@ -30,9 +30,6 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set nocompatible
 
-" Pathogen needs to be first to init all plugins
-silent! call pathogen#infect()
-
 set nowritebackup                           " Hate backups
 set noswapfile                              " ...and swap files
 
@@ -95,9 +92,7 @@ set encoding=utf-8
 
 " All status line
 set statusline+=%*                           " switch back to normal status color
-set statusline+=%{bondsman#Bail()}%*       " give me a branch name (is modified?)
 set statusline+=%#ErrorMsg#                   " set the highlight to error
-set statusline+=%{khuno#Status()}%*          " Tell me how many Flake errors I have
 set statusline+=%*                           " switch back to normal status color
 set statusline+=%{Collapse(expand('%:p'))}   " absolute path truncated
 set statusline+=%m                           " are you modified?
