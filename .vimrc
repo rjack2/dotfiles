@@ -57,7 +57,7 @@ else
   let g:solarized_termtrans = 1
 endif
 
-colorscheme tomorrow-night
+colorscheme desert
 
 
 " terminal width
